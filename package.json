@@ -1,0 +1,21 @@
+{
+  "name": "@badrap/preload",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "source": "src/index.js",
+  "repository": "badrap/preload",
+  "author": "Joachim Viide <jviide@iki.fi>",
+  "license": "MIT",
+  "scripts": {
+    "lint": "eslint --ignore-path .gitignore .",
+    "build": "microbundle --format es,cjs",
+    "prepublishOnly": "yarn run build"
+  },
+  "devDependencies": {
+    "eslint": "^5.9.0",
+    "eslint-config-prettier": "^3.3.0",
+    "microbundle": "^0.7.0",
+    "prettier": "^1.15.2"
+  }
+}

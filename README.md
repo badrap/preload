@@ -1,6 +1,6 @@
 # preload
 
-Add a `preload` function to your vue-router components for prepopulating data before routes get rendered. Mostly modeled after [Sapper's `preload`](https://sapper.svelte.technology/guide#preloading), but also similar to [Nuxt.js's `asyncData`](https://nuxtjs.org/guide/async-data) or [Next.js's `getInitialProps`](https://nextjs.org/docs/#fetching-data-and-component-lifecycle).
+Add a `preload` function to your vue-router components for prepopulating data before routes get rendered. Mostly modeled after Sapper's [`preload`](https://sapper.svelte.technology/guide#preloading), but also similar to Nuxt.js's [`asyncData`](https://nuxtjs.org/guide/async-data) and Next.js's [`getInitialProps`](https://nextjs.org/docs/#fetching-data-and-component-lifecycle).
 
 ## Installation
 

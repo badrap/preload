@@ -10,7 +10,7 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint --ignore-path .gitignore .",
-    "build": "microbundle --format es,cjs",
+    "build": "rm -rf dist && microbundle --format es,cjs",
     "prepublishOnly": "yarn run build"
   },
   "devDependencies": {

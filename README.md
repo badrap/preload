@@ -106,6 +106,31 @@ const routes = preload(..., {
 
 After this `appName` will be a part of every context object passed to `preload` methods of the decorated route components.
 
+### Hooks
+
+In addition to extra context properties you can pass in two hooks. The `beforePreload` hook is executed before a route change causes `preload` methods to be called. The `afterPreload` hook gets executed when all of the `preload` calls are done.
+
+```js
+const routes = preload(..., {
+  beforePreload(() => {
+    // Start a progress indicator here.
+  }),
+  afterPreload(err => {
+    // Stop and hide the progress indicator here.
+  })
+);
+```
+
+### Error Component
+
+The default components that gets shown whenever `preload` returns a `context.error(...)` value can be replaced:
+
+```js
+const routes = preload(..., {
+  errorComponent: ErrorComponent
+});
+```
+
 ## License
 
 This library is licensed under the MIT license. See [LICENSE](./LICENSE).

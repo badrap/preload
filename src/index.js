@@ -7,7 +7,7 @@ function mapRoutes(routes, func) {
   });
 }
 
-function noop() {}
+function defaultNoopHook() {}
 
 const defaultErrorComponent = {
   functional: true,
@@ -50,8 +50,8 @@ export default function preload(
   routes,
   {
     context = {},
-    beforePreload = noop,
-    afterPreload = noop,
+    beforePreload = defaultNoopHoop,
+    afterPreload = defaultNoopHook,
     errorComponent = defaultErrorComponent
   } = {}
 ) {

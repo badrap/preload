@@ -50,7 +50,7 @@ export default function preload(
   routes,
   {
     context = {},
-    beforePreload = defaultNoopHoop,
+    beforePreload = defaultNoopHook,
     afterPreload = defaultNoopHook,
     errorComponent = defaultErrorComponent
   } = {}

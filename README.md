@@ -1,4 +1,4 @@
-# preload
+# @badrap/preload
 
 Add a `preload` function to your [vue-router](https://router.vuejs.org/) route components, used for prepopulating data before those routes get rendered. Mostly modeled after Sapper's [`preload`](https://sapper.svelte.technology/guide#preloading), but also similar to Nuxt.js's [`asyncData`](https://nuxtjs.org/guide/async-data) and Next.js's [`getInitialProps`](https://nextjs.org/docs/#fetching-data-and-component-lifecycle).
 
@@ -81,6 +81,7 @@ The `preload` method gets a context object that contains useful information and 
 Here's an example that uses all of the above:
 
 ```vue
+<script>
 export default {
   async preload({ route, redirect, error }) {
     const { search } = route.query;
@@ -90,6 +91,7 @@ export default {
     return redirect("https://google.com/search?q=" + encodeURIComponent(search));
   }
 };
+</script>
 ```
 
 In addition to these properties you can mix in your own when decorating the route components:

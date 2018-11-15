@@ -10,9 +10,12 @@ function mapRoutes(routes, func) {
 function noop() {}
 
 const defaultErrorComponent = {
+  functional: true,
   props: ["status", "error"],
-  render(h) {
-    h("div", {}, [this.status + " " + this.error.message]);
+  render(createElement, context) {
+    return createElement("div", {}, [
+      context.props.status + " " + context.props.error.message
+    ]);
   }
 };
 
@@ -124,11 +127,10 @@ export default function preload(
         datas[key] = data;
       }
     } catch (err) {
-      afterPreload(err);
       throw err;
+    } finally {
+      afterPreload();
     }
-
-    afterPreload();
 
     if (!action) {
       component = {

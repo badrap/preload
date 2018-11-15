@@ -10,7 +10,7 @@ $ yarn install --dev @badrap/preload
 
 ## Usage
 
-### Basic setup
+### Basic Setup
 
 This module exports a single function. Use this function to decorate your route definitions before passing them to vue-router:
 
@@ -36,7 +36,7 @@ const app = new Vue({
 }).$mount('#app')
 ```
 
-### Adding preload
+### Adding Preloading to Components
 
 After this setup dance the route components **Foo** and **Bar** can define a new method `reload` that is used to prepopulate their data whenever their route gets rendered - on initial render as well as route changes.
 

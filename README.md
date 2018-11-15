@@ -20,8 +20,8 @@ This module exports a single function. Use this function to decorate your route 
 import Vue from "vue";
 import VueRouter from "vue-router";
 import preload from "@badrap/preload";  // Import preload.
-import Foo from "./foo.vue";            // Import a couple of route components which
-import Bar from "./bar.vue";            // we decorate with preload.
+import Foo from "./Foo.vue";            // Import a couple of route components which
+import Bar from "./Bar.vue";            // we decorate with preload.
 
 Vue.use(VueRouter);
 
@@ -33,6 +33,7 @@ const routes = preload([                // Use preload here to decorate the rout
 const router = new VueRouter({ 
   routes                                // ...and pass them to vue-router.
 });
+
 new Vue({
   router,
   template: "<router-view />"
@@ -43,7 +44,7 @@ new Vue({
 
 After this setup dance the route components **Foo** and **Bar** can define a new method `reload` that is used to prepopulate their data whenever their route gets rendered - on initial render as well as route changes.
 
-Let's define **Foo** in **foo.vue**:
+Let's define **Foo** in **Foo.vue**:
 
 ```vue
 <template>

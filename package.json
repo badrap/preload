@@ -1,6 +1,7 @@
 {
   "name": "@badrap/preload",
   "version": "0.0.1",
+  "description": "Data preloading for vue-router, similar to Sapper's preload or Nuxt.js's asyncData",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "source": "src/index.js",

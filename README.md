@@ -10,6 +10,8 @@ $ yarn install --dev @badrap/preload
 
 ## Usage
 
+A modified of the following examples is available at [CodeSandbox](https://codesandbox.io/s/zywnmy35x?initialpath=%23%2Ffoo).
+
 ### Basic Setup
 
 This module exports a single function. Use this function to decorate your route definitions before passing them to vue-router:
@@ -31,9 +33,10 @@ const routes = preload([                // Use preload here to decorate the rout
 const router = new VueRouter({ 
   routes                                // ...and pass them to vue-router.
 });
-const app = new Vue({ 
-  router
-}).$mount('#app')
+new Vue({
+  router,
+  template: "<router-view />"
+}).$mount("#app");
 ```
 
 ### Adding Preloading to Components
@@ -44,9 +47,7 @@ Let's define **Foo** in **foo.vue**:
 
 ```vue
 <template>
-  <div>
-    {{ greeting }}, {{ ip }}!
-  </div>
+  <div>{{ greeting }}, {{ ip }}!</div>
 </template>
 
 <script>

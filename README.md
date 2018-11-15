@@ -1,4 +1,4 @@
-# @badrap/preload
+# @badrap/preload [![CircleCI](https://circleci.com/gh/badrap/preload.svg?style=shield)](https://circleci.com/gh/badrap/preload)
 
 Add a `preload` function to your [vue-router](https://router.vuejs.org/) route components, used for prepopulating data before those routes get rendered. Mostly modeled after Sapper's [`preload`](https://sapper.svelte.technology/guide#preloading), but also similar to Nuxt.js's [`asyncData`](https://nuxtjs.org/guide/async-data) and Next.js's [`getInitialProps`](https://nextjs.org/docs/#fetching-data-and-component-lifecycle).
 

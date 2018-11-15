@@ -18,5 +18,11 @@
     "eslint-config-prettier": "^3.3.0",
     "microbundle": "^0.7.0",
     "prettier": "^1.15.2"
-  }
+  },
+  "keywords": [
+    "vue",
+    "router",
+    "routing",
+    "preload"
+  ]
 }

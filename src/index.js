@@ -9,6 +9,13 @@ function mapRoutes(routes, func) {
 
 function noop() {}
 
+const defaultErrorComponent = {
+  props: ["status", "error"],
+  render(h) {
+    h("div", {}, [this.status + " " + this.error.message]);
+  }
+};
+
 const ACTION_ERROR = Symbol();
 const ACTION_REDIRECT = Symbol();
 
@@ -38,8 +45,12 @@ function componentPromise(component) {
 
 export default function preload(
   routes,
-  context,
-  { errorComponent, beforePreload = noop, afterPreload = noop } = {}
+  {
+    context = {},
+    beforePreload = noop,
+    afterPreload = noop,
+    errorComponent = defaultErrorComponent
+  } = {}
 ) {
   let component = null;
   const preloadKey = Symbol();
@@ -102,7 +113,7 @@ export default function preload(
         if (!preload) {
           continue;
         }
-        const data = await preload({ route: to, redirect, error, context });
+        const data = await preload({ route: to, redirect, error, ...context });
         if (
           data &&
           (data.$type === ACTION_REDIRECT || data.$type === ACTION_ERROR)

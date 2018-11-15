@@ -116,7 +116,9 @@ export default function preload(
         if (!preload) {
           continue;
         }
-        const data = await preload({ route: to, redirect, error, ...context });
+        const data = await Promise.resolve(
+          preload({ route: to, redirect, error, ...context })
+        );
         if (
           data &&
           (data.$type === ACTION_REDIRECT || data.$type === ACTION_ERROR)

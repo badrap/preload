@@ -41,7 +41,7 @@ function componentPromise(component) {
   }
   return new Promise((resolve, reject) => {
     Promise.resolve(component(resolve, reject)).then(resolve, reject);
-  });
+  }).then(resolved => (resolved.__esModule ? resolved.default : resolved));
 }
 
 export default function preload(

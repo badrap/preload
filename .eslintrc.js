@@ -8,7 +8,9 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: "module"
   },
+  plugins: ["prettier"],
   rules: {
+    "prettier/prettier": "warn",
     indent: ["error", 2],
     "linebreak-style": ["error", "unix"],
     quotes: ["error", "double"],

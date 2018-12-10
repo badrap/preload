@@ -78,6 +78,9 @@ export default function preload(
               }
             }
           };
+        }, (err) => {
+          cached = null;
+          return Promise.reject(err);
         });
       }
       return cached;

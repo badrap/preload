@@ -60,28 +60,31 @@ export default function preload(
     let cached = null;
     const cachedPrepare = () => {
       if (!cached) {
-        cached = componentPromise(route.component).then(resolved => {
-          if (!resolved.preload) {
-            return { key: null, preload: null, component: resolved };
-          }
-          const key = Symbol();
-          return {
-            key,
-            preload: resolved.preload,
-            component: {
-              extends: resolved,
-              inject: {
-                $preload: preloadKey
-              },
-              data() {
-                return { ...this.$preload[key] };
-              }
+        cached = componentPromise(route.component).then(
+          resolved => {
+            if (!resolved.preload) {
+              return { key: null, preload: null, component: resolved };
             }
-          };
-        }, (err) => {
-          cached = null;
-          return Promise.reject(err);
-        });
+            const key = Symbol();
+            return {
+              key,
+              preload: resolved.preload,
+              component: {
+                extends: resolved,
+                inject: {
+                  $preload: preloadKey
+                },
+                data() {
+                  return { ...this.$preload[key] };
+                }
+              }
+            };
+          },
+          err => {
+            cached = null;
+            return Promise.reject(err);
+          }
+        );
       }
       return cached;
     };

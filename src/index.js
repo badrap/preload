@@ -63,20 +63,20 @@ export default function preload(
         cached = componentPromise(route.component).then(
           resolved => {
             if (!resolved.preload) {
-              return { key: null, preload: null, component: resolved };
+              return resolved;
             }
             const key = Symbol();
             return {
-              key,
-              preload: resolved.preload,
-              component: {
-                extends: resolved,
-                inject: {
-                  $preload: preloadKey
-                },
-                data() {
-                  return { ...this.$preload[key] };
-                }
+              extends: resolved,
+              [preloadKey]: {
+                key,
+                preload: resolved.preload
+              },
+              inject: {
+                $preload: preloadKey
+              },
+              data() {
+                return { ...this.$preload[key] };
               }
             };
           },
@@ -91,13 +91,7 @@ export default function preload(
 
     return {
       ...route,
-      meta: {
-        ...route.meta,
-        [preloadKey]: cachedPrepare
-      },
-      component() {
-        return cachedPrepare().then(({ component }) => component);
-      }
+      component: cachedPrepare
     };
   });
 
@@ -122,26 +116,26 @@ export default function preload(
         }
 
         return iterate(to.matched, 0, route => {
-          const prepare = route.meta[preloadKey];
-          if (action || !prepare) {
+          if (action) {
             return;
           }
-          return prepare().then(({ key, preload }) => {
-            if (preload) {
-              return Promise.resolve(
-                preload({ route: to, redirect, error, ...context })
-              ).then(data => {
-                if (
-                  data &&
-                  (data.$type === ACTION_REDIRECT ||
-                    data.$type === ACTION_ERROR)
-                ) {
-                  action = data;
-                } else {
-                  datas[key] = data;
-                }
-              });
+          return componentPromise(route.components.default).then(component => {
+            if (!component[preloadKey]) {
+              return;
             }
+            const { key, preload } = component[preloadKey];
+            return Promise.resolve(
+              preload({ route: to, redirect, error, ...context })
+            ).then(data => {
+              if (
+                data &&
+                (data.$type === ACTION_REDIRECT || data.$type === ACTION_ERROR)
+              ) {
+                action = data;
+              } else {
+                datas[key] = data;
+              }
+            });
           });
         })
           .then(

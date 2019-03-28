@@ -42,7 +42,7 @@ new Vue({
 
 ### Adding Preloading to Components
 
-After this setup dance the route components **Foo** and **Bar** can define a new method `reload` that is used to prepopulate their data whenever their route gets rendered - on initial render as well as route changes.
+After this setup dance the route components **Foo** and **Bar** can define a new method `preload` that is used to prepopulate their data whenever their route gets rendered - on initial render as well as route changes.
 
 Let's define **Foo** in **Foo.vue**:
 

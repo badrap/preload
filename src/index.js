@@ -1,11 +1,11 @@
-function mapRoutes(routes, func) {
+const mapRoutes = (routes, func) => {
   return routes.map(route => {
     return func({
       ...route,
       children: route.children && mapRoutes(route.children, func)
     });
   });
-}
+};
 
 const defaultErrorComponent = {
   functional: true,
@@ -17,32 +17,32 @@ const defaultErrorComponent = {
   }
 };
 
-const ACTION_ERROR = {};
-const ACTION_REDIRECT = {};
+const ACTION_ERROR = Symbol();
+const ACTION_REDIRECT = Symbol();
 
-function error(status = 404, message = "Not found") {
+const error = (status = 404, message = "Not found") => {
   return {
     $type: ACTION_ERROR,
     status,
     error: message instanceof Error ? message : { message }
   };
-}
+};
 
-function redirect(to) {
+const redirect = to => {
   return {
     $type: ACTION_REDIRECT,
     to
   };
-}
+};
 
-function componentPromise(component) {
+const componentPromise = component => {
   if (typeof component !== "function") {
     return Promise.resolve(component);
   }
   return new Promise((resolve, reject) => {
     Promise.resolve(component(resolve, reject)).then(resolve, reject);
   }).then(resolved => (resolved.__esModule ? resolved.default : resolved));
-}
+};
 
 export default function preload(
   routes,
@@ -95,103 +95,76 @@ export default function preload(
     };
   });
 
-  function iterate(array, index, func) {
-    if (index >= array.length) {
-      return Promise.resolve();
-    } else {
-      return Promise.resolve(func(array[index])).then(() => {
-        return iterate(array, index + 1, func);
-      });
-    }
-  }
-
-  function beforeRoute(to, _from, next) {
+  async function beforeRoute(to) {
     let action = null;
     const datas = {};
 
-    Promise.resolve()
-      .then(() => {
-        if (beforePreload) {
-          beforePreload();
-        }
+    if (beforePreload) {
+      beforePreload();
+    }
 
-        return iterate(to.matched, 0, route => {
-          if (action) {
-            return;
-          }
-          return componentPromise(route.components.default).then(component => {
-            if (!component[preloadKey]) {
-              return;
-            }
-            const { key, preload } = component[preloadKey];
-            return Promise.resolve(
-              preload({ route: to, redirect, error, ...context })
-            ).then(data => {
-              if (
-                data &&
-                (data.$type === ACTION_REDIRECT || data.$type === ACTION_ERROR)
-              ) {
-                action = data;
-              } else {
-                datas[key] = data;
-              }
-            });
+    try {
+      for (let i = 0; i < to.matched.length; i++) {
+        const route = to.matched[i];
+        const component = await componentPromise(route.components.default);
+        if (!component[preloadKey]) {
+          continue;
+        }
+        const { key, preload } = component[preloadKey];
+        const data = await Promise.resolve(
+          preload({ route: to, redirect, error, ...context })
+        );
+
+        if (
+          data &&
+          (data.$type === ACTION_REDIRECT || data.$type === ACTION_ERROR)
+        ) {
+          action = data;
+          break;
+        }
+        datas[key] = data;
+      }
+    } finally {
+      afterPreload();
+    }
+
+    if (!action) {
+      component = {
+        provide() {
+          return {
+            [preloadKey]: datas
+          };
+        },
+        render(h) {
+          return h("router-view", {
+            attrs: this.$attrs
           });
-        })
-          .then(
-            () => {
-              if (afterPreload) {
-                afterPreload();
-              }
-            },
-            err => {
-              if (afterPreload) {
-                afterPreload();
-              }
-              throw err;
-            }
-          )
-          .then(() => {
-            if (!action) {
-              component = {
-                provide() {
-                  return {
-                    [preloadKey]: datas
-                  };
-                },
-                render(h) {
-                  return h("router-view", {
-                    attrs: this.$attrs
-                  });
-                }
-              };
-            } else if (action.$type === ACTION_ERROR) {
-              component = {
-                render(h) {
-                  return h(errorComponent, {
-                    props: {
-                      status: action.status,
-                      error: action.error
-                    }
-                  });
-                }
-              };
-            } else if (action.$type === ACTION_REDIRECT) {
-              return action.to;
-            } else {
-              throw new Error("unknown action");
+        }
+      };
+    } else if (action.$type === ACTION_ERROR) {
+      component = {
+        render(h) {
+          return h(errorComponent, {
+            props: {
+              status: action.status,
+              error: action.error
             }
           });
-      })
-      .then(next, next);
+        }
+      };
+    } else if (action.$type === ACTION_REDIRECT) {
+      return action.to;
+    } else {
+      throw new Error("unknown action");
+    }
   }
 
   return [
     {
       path: "",
       component: {
-        beforeRouteEnter: beforeRoute,
-        beforeRouteUpdate: beforeRoute,
+        beforeRouteEnter: (to, _, next) => beforeRoute(to).then(next, next),
+        beforeRouteUpdate: (to, _, next) => beforeRoute(to).then(next, next),
         render(h) {
           return h(component, {
             key: this.$route.fullPath,

@@ -143,7 +143,7 @@ export default function preload(
         },
         render(h) {
           return h("router-view", {
-            attrs: this.$attrs
+            attrs: { ...this.$attrs }
           });
         }
       };

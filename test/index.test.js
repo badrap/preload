@@ -70,15 +70,13 @@ describe("preload", () => {
     expect(wrapper.contains(DIV)).toBe(true);
   });
 
-  it("handles async components", async () => {
+  it("survives routes with props", async () => {
     const wrapper = await navigate(
       [
         {
           path: "/:id",
           props: true,
-          component: async () => {
-            return DIV;
-          }
+          component: DIV
         }
       ],
       "/1"

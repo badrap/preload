@@ -1,18 +1,40 @@
-import Vue from "vue";
-import Router from "vue-router";
 import preload from "../src/index.js";
-import { expect } from "chai";
+import { mount, createLocalVue } from "@vue/test-utils";
+import Router from "vue-router";
 
-Vue.use(Router);
+const DIV = {
+  render(h) {
+    return h("div", {}, []);
+  }
+};
 
 function navigate(routes, path = "/") {
-  const r = new Router({ routes: preload(routes) });
-  const p = new Promise((resolve, reject) => {
-    r.onReady(() => resolve(r.currentRoute));
-    r.onError(reject);
+  const router = new Router({ routes: preload(routes) });
+
+  const localVue = createLocalVue();
+  localVue.use(Router);
+
+  return new Promise((resolve, reject) => {
+    const wrapper = mount(
+      {
+        render(h) {
+          return h("router-view", {}, []);
+        },
+        errorCaptured(err) {
+          reject(err);
+          return false;
+        }
+      },
+      {
+        localVue,
+        router
+      }
+    );
+
+    router.push(path);
+    router.onError(reject);
+    router.onReady(() => resolve(wrapper));
   });
-  r.push(path);
-  return p;
 }
 
 describe("preload", () => {
@@ -22,20 +44,45 @@ describe("preload", () => {
       {
         path: "/",
         component: {
+          extends: DIV,
           preload() {
             called = true;
           }
         }
       }
     ]);
-    expect(called).to.be.true;
+    expect(called).toBe(true);
   });
 
   it("survives routes without components", async () => {
-    await navigate([
+    const wrapper = await navigate([
       {
-        path: "/"
+        path: "/",
+        beforeEnter(to, from, next) {
+          next("/foo");
+        }
+      },
+      {
+        path: "/foo",
+        component: DIV
       }
     ]);
+    expect(wrapper.contains(DIV)).toBe(true);
+  });
+
+  it("handles async components", async () => {
+    const wrapper = await navigate(
+      [
+        {
+          path: "/:id",
+          props: true,
+          component: async () => {
+            return DIV;
+          }
+        }
+      ],
+      "/1"
+    );
+    expect(wrapper.contains(DIV)).toBe(true);
   });
 });

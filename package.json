@@ -9,27 +9,40 @@
   "author": "Joachim Viide <jviide@iki.fi>",
   "license": "MIT",
   "scripts": {
-    "test": "mocha -r esm",
+    "test": "jest",
     "lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
     "build": "rm -rf dist && microbundle --format es,cjs",
     "prepublishOnly": "yarn run build"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
+    "@babel/core": "^7.4.0",
+    "@babel/preset-env": "^7.4.2",
+    "@vue/test-utils": "^1.0.0-beta.29",
+    "babel-jest": "^24.5.0",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-prettier": "^3.0.1",
-    "esm": "^3.2.22",
+    "jest": "^24.5.0",
     "microbundle": "^0.11.0",
-    "mocha": "^6.0.2",
     "prettier": "^1.16.4",
     "vue": "^2.6.10",
-    "vue-router": "^3.0.2"
+    "vue-router": "^3.0.2",
+    "vue-template-compiler": "^2.6.10"
   },
   "keywords": [
     "vue",
     "router",
     "routing",
     "preload"
-  ]
+  ],
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "vue"
+    ],
+    "transform": {
+      "^.+\\.js$": "<rootDir>/node_modules/babel-jest"
+    }
+  }
 }

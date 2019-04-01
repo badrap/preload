@@ -9,16 +9,22 @@
   "author": "Joachim Viide <jviide@iki.fi>",
   "license": "MIT",
   "scripts": {
+    "test": "mocha -r esm",
     "lint": "eslint --ignore-path .gitignore --max-warnings 0 .",
     "build": "rm -rf dist && microbundle --format es,cjs",
     "prepublishOnly": "yarn run build"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-prettier": "^3.0.1",
+    "esm": "^3.2.22",
     "microbundle": "^0.11.0",
-    "prettier": "^1.16.4"
+    "mocha": "^6.0.2",
+    "prettier": "^1.16.4",
+    "vue": "^2.6.10",
+    "vue-router": "^3.0.2"
   },
   "keywords": [
     "vue",

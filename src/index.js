@@ -125,7 +125,9 @@ export default function preload(
         datas[key] = data;
       }
     } finally {
-      afterPreload();
+      if (afterPreload) {
+        afterPreload();
+      }
     }
 
     if (!action) {

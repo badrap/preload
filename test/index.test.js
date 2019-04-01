@@ -5,13 +5,14 @@ import { expect } from "chai";
 
 Vue.use(Router);
 
-const NavigationAborted = new Error();
-
 function navigate(routes, path = "/") {
   const r = new Router({ routes: preload(routes) });
-  return new Promise((resolve, reject) => {
-    r.push(path, () => resolve(), () => reject(NavigationAborted));
+  const p = new Promise((resolve, reject) => {
+    r.onReady(() => resolve(r.currentRoute));
+    r.onError(reject);
   });
+  r.push(path);
+  return p;
 }
 
 describe("preload", () => {
@@ -28,5 +29,13 @@ describe("preload", () => {
       }
     ]);
     expect(called).to.be.true;
+  });
+
+  it("survives routes without components", async () => {
+    await navigate([
+      {
+        path: "/"
+      }
+    ]);
   });
 });

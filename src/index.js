@@ -57,6 +57,10 @@ export default function preload(
   let component;
 
   const newRoutes = mapRoutes(routes, route => {
+    if (!route.component) {
+      return route;
+    }
+
     let cached = null;
     const cachedPrepare = () => {
       if (!cached) {
@@ -107,7 +111,7 @@ export default function preload(
       for (let i = 0; i < to.matched.length; i++) {
         const route = to.matched[i];
         const component = await componentPromise(route.components.default);
-        if (!component[preloadKey]) {
+        if (!component || !component[preloadKey]) {
           continue;
         }
         const { key, preload } = component[preloadKey];

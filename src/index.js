@@ -53,18 +53,14 @@ export default function preload(
     afterPreload
   } = {}
 ) {
-  const preloadKey = Symbol();
   let component;
+  const preloadKey = Symbol();
 
-  const newRoutes = mapRoutes(routes, route => {
-    if (!route.component) {
-      return route;
-    }
-
+  const cachedWrapper = component => {
     let cached = null;
-    const cachedPrepare = () => {
+    return () => {
       if (!cached) {
-        cached = componentPromise(route.component).then(
+        cached = componentPromise(component).then(
           resolved => {
             if (!resolved.preload) {
               return resolved;
@@ -92,11 +88,21 @@ export default function preload(
       }
       return cached;
     };
+  };
 
-    return {
-      ...route,
-      component: cachedPrepare
-    };
+  const newRoutes = mapRoutes(routes, route => {
+    const newRoute = { ...route };
+    if (newRoute.component) {
+      newRoute.component = cachedWrapper(newRoute.component);
+    }
+    if (newRoute.components) {
+      const components = {};
+      Object.keys(newRoute.components).forEach(key => {
+        components[key] = cachedWrapper(newRoute.components[key]);
+      });
+      newRoute.components = components;
+    }
+    return newRoute;
   });
 
   async function beforeRoute(to) {
@@ -110,23 +116,35 @@ export default function preload(
     try {
       for (let i = 0; i < to.matched.length; i++) {
         const route = to.matched[i];
-        const component = await componentPromise(route.components.default);
-        if (!component || !component[preloadKey]) {
-          continue;
-        }
-        const { key, preload } = component[preloadKey];
-        const data = await Promise.resolve(
-          preload({ route: to, redirect, error, ...context })
-        );
+        const keys = Object.keys(route.components);
+        for (let j = 0; j < keys.length; j++) {
+          const comp = await componentPromise(route.components[keys[j]]);
+          if (!comp || !comp[preloadKey]) {
+            continue;
+          }
+          const { key, preload } = comp[preloadKey];
+          const data = await Promise.resolve(
+            preload({ route: to, redirect, error, ...context })
+          );
 
-        if (
-          data &&
-          (data.$type === ACTION_REDIRECT || data.$type === ACTION_ERROR)
-        ) {
-          action = data;
-          break;
+          if (data && data.$type === ACTION_REDIRECT) {
+            return action.to;
+          }
+          if (data && data.$type === ACTION_ERROR) {
+            component = {
+              render(h) {
+                return h(errorComponent, {
+                  props: {
+                    status: action.status,
+                    error: action.error
+                  }
+                });
+              }
+            };
+            return;
+          }
+          datas[key] = data;
         }
-        datas[key] = data;
       }
     } finally {
       if (afterPreload) {
@@ -134,35 +152,18 @@ export default function preload(
       }
     }
 
-    if (!action) {
-      component = {
-        provide() {
-          return {
-            [preloadKey]: datas
-          };
-        },
-        render(h) {
-          return h("router-view", {
-            attrs: { ...this.$attrs }
-          });
-        }
-      };
-    } else if (action.$type === ACTION_ERROR) {
-      component = {
-        render(h) {
-          return h(errorComponent, {
-            props: {
-              status: action.status,
-              error: action.error
-            }
-          });
-        }
-      };
-    } else if (action.$type === ACTION_REDIRECT) {
-      return action.to;
-    } else {
-      throw new Error("unknown action");
-    }
+    component = {
+      provide() {
+        return {
+          [preloadKey]: datas
+        };
+      },
+      render(h) {
+        return h("router-view", {
+          attrs: { ...this.$attrs }
+        });
+      }
+    };
   }
 
   return [

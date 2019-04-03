@@ -2,14 +2,21 @@ import preload from "../src/index.js";
 import { mount, createLocalVue } from "@vue/test-utils";
 import Router from "vue-router";
 
-const DIV = {
-  render(h) {
-    return h("div", {}, []);
-  }
-};
+function div(attrs = {}) {
+  return {
+    render(h) {
+      return h("div", {}, []);
+    },
+    ...attrs
+  };
+}
+
+const DIV = div();
 
 function navigate(routes, path = "/") {
-  const router = new Router({ routes: preload(routes) });
+  const router = new Router({
+    routes: preload(routes)
+  });
 
   const localVue = createLocalVue();
   localVue.use(Router);
@@ -33,7 +40,9 @@ function navigate(routes, path = "/") {
 
     router.push(path);
     router.onError(reject);
-    router.onReady(() => resolve(wrapper));
+    router.afterEach(() => {
+      resolve(wrapper);
+    });
   });
 }
 
@@ -52,6 +61,36 @@ describe("preload", () => {
       }
     ]);
     expect(called).toBe(true);
+  });
+
+  it("mixes the object returned by preload() to the component data", async () => {
+    const wrapper = await navigate([
+      {
+        path: "/",
+        component: div({
+          name: "SomeComponent",
+          preload() {
+            return { a: 1 };
+          }
+        })
+      }
+    ]);
+    expect(wrapper.find({ name: "SomeComponent" }).vm.a).toBe(1);
+  });
+
+  it("supports async preload()", async () => {
+    const wrapper = await navigate([
+      {
+        path: "/",
+        component: div({
+          name: "SomeComponent",
+          async preload() {
+            return { a: 1 };
+          }
+        })
+      }
+    ]);
+    expect(wrapper.find({ name: "SomeComponent" }).vm.a).toBe(1);
   });
 
   it("survives routes without components", async () => {
@@ -82,5 +121,32 @@ describe("preload", () => {
       "/1"
     );
     expect(wrapper.contains(DIV)).toBe(true);
+  });
+
+  it("supports named views", async () => {
+    const wrapper = await navigate([
+      {
+        path: "/",
+        component: {
+          render(h) {
+            return h("router-view", { props: { name: "first" } }, []);
+          }
+        },
+        children: [
+          {
+            path: "",
+            components: {
+              first: new div({
+                name: "SomeComponent",
+                preload() {
+                  return { a: 1 };
+                }
+              })
+            }
+          }
+        ]
+      }
+    ]);
+    expect(wrapper.find({ name: "SomeComponent" }).vm.a).toBe(1);
   });
 });

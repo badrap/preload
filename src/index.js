@@ -106,7 +106,6 @@ export default function preload(
   });
 
   async function beforeRoute(to) {
-    let action = null;
     const datas = {};
 
     if (beforePreload) {
@@ -128,15 +127,15 @@ export default function preload(
           );
 
           if (data && data.$type === ACTION_REDIRECT) {
-            return action.to;
+            return data.to;
           }
           if (data && data.$type === ACTION_ERROR) {
             component = {
               render(h) {
                 return h(errorComponent, {
                   props: {
-                    status: action.status,
-                    error: action.error
+                    status: data.status,
+                    error: data.error
                   }
                 });
               }

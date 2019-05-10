@@ -13,9 +13,9 @@ function div(attrs = {}) {
 
 const DIV = div();
 
-function navigate(routes, path = "/") {
+function navigate(routes, path = "/", config = {}) {
   const router = new Router({
-    routes: preload(routes)
+    routes: preload(routes, config)
   });
 
   const localVue = createLocalVue();
@@ -148,5 +148,41 @@ describe("preload", () => {
       }
     ]);
     expect(wrapper.find({ name: "SomeComponent" }).vm.a).toBe(1);
+  });
+
+  it("redirects when a redirect() result is returned", async () => {
+    const wrapper = await navigate([
+      {
+        path: "/",
+        component: {
+          preload({ redirect }) {
+            return redirect("/test");
+          }
+        }
+      },
+      {
+        path: "/test",
+        component: DIV
+      }
+    ]);
+    expect(wrapper.contains(DIV)).toBe(true);
+  });
+
+  it("renders the error component when a error() result is returned", async () => {
+    const wrapper = await navigate(
+      [
+        {
+          path: "/",
+          component: {
+            preload({ error }) {
+              return error();
+            }
+          }
+        }
+      ],
+      "/",
+      { errorComponent: DIV }
+    );
+    expect(wrapper.contains(DIV)).toBe(true);
   });
 });

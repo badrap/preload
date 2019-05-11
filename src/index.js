@@ -1,3 +1,36 @@
+// Execute `callback` for each `array` element asynchronously,
+// without building a memory-hogging promise chain.
+//
+// The callback may return a promise/thenable, in which case the
+// value will then be resolved before moving on to the next element.
+// To facilitate early exits, the callback's return value may resolve
+// to an object with a truthy property `break`.
+//
+// Return a promise that resolves to either the `callback`'s early
+// exit value or `{ break: false }` otherwise.
+function asyncFor(array, callback) {
+  return new Promise((resolve, reject) => {
+    function step(index) {
+      try {
+        if (index === array.length) {
+          resolve({ break: false });
+        } else {
+          Promise.resolve(callback(array[index])).then(result => {
+            if (result && result.break) {
+              resolve(result);
+            } else {
+              step(index + 1);
+            }
+          }, reject);
+        }
+      } catch (err) {
+        reject(err);
+      }
+    }
+    step(0);
+  });
+}
+
 const mapRoutes = (routes, func) => {
   return routes.map(route => {
     return func({
@@ -44,15 +77,14 @@ const componentPromise = component => {
   }).then(resolved => (resolved.__esModule ? resolved.default : resolved));
 };
 
-export default function preload(
-  routes,
-  {
+export default function preload(routes, options = {}) {
+  const {
     context = {},
     errorComponent = defaultErrorComponent,
     beforePreload,
     afterPreload
-  } = {}
-) {
+  } = options;
+
   let component;
   const preloadKey = Symbol();
 
@@ -105,72 +137,81 @@ export default function preload(
     return newRoute;
   });
 
-  async function beforeRoute(to) {
+  function beforeRoute(to, _, next) {
     const datas = {};
 
     if (beforePreload) {
       beforePreload();
     }
 
-    try {
-      for (let i = 0; i < to.matched.length; i++) {
-        const route = to.matched[i];
-        const keys = Object.keys(route.components);
-        for (let j = 0; j < keys.length; j++) {
-          const comp = await componentPromise(route.components[keys[j]]);
+    return asyncFor(to.matched, route => {
+      return asyncFor(Object.keys(route.components), key => {
+        return componentPromise(route.components[key]).then(comp => {
           if (!comp || !comp[preloadKey]) {
-            continue;
-          }
-          const { key, preload } = comp[preloadKey];
-          const data = await Promise.resolve(
-            preload({ route: to, redirect, error, ...context })
-          );
-
-          if (data && data.$type === ACTION_REDIRECT) {
-            return data.to;
-          }
-          if (data && data.$type === ACTION_ERROR) {
-            component = {
-              render(h) {
-                return h(errorComponent, {
-                  props: {
-                    status: data.status,
-                    error: data.error
-                  }
-                });
-              }
-            };
             return;
           }
-          datas[key] = data;
-        }
-      }
-    } finally {
-      if (afterPreload) {
-        afterPreload();
-      }
-    }
-
-    component = {
-      provide() {
-        return {
-          [preloadKey]: datas
-        };
-      },
-      render(h) {
-        return h("router-view", {
-          attrs: { ...this.$attrs }
+          const { key, preload } = comp[preloadKey];
+          return Promise.resolve(
+            preload({ route: to, redirect, error, ...context })
+          ).then(data => {
+            if (data && data.$type === ACTION_REDIRECT) {
+              return { break: true, value: data.to };
+            }
+            if (data && data.$type === ACTION_ERROR) {
+              component = {
+                render(h) {
+                  return h(errorComponent, {
+                    props: {
+                      status: data.status,
+                      error: data.error
+                    }
+                  });
+                }
+              };
+              return { break: true };
+            }
+            datas[key] = data;
+          });
         });
-      }
-    };
+      });
+    })
+      .then(
+        result => {
+          if (afterPreload) {
+            afterPreload();
+          }
+          if (result.break) {
+            return result.value;
+          }
+          component = {
+            provide() {
+              return {
+                [preloadKey]: datas
+              };
+            },
+            render(h) {
+              return h("router-view", {
+                attrs: { ...this.$attrs }
+              });
+            }
+          };
+        },
+        err => {
+          if (afterPreload) {
+            afterPreload();
+          }
+          throw err;
+        }
+      )
+      .then(next, next);
   }
 
   return [
     {
       path: "",
       component: {
-        beforeRouteEnter: (to, _, next) => beforeRoute(to).then(next, next),
-        beforeRouteUpdate: (to, _, next) => beforeRoute(to).then(next, next),
+        beforeRouteEnter: beforeRoute,
+        beforeRouteUpdate: beforeRoute,
         render(h) {
           return h(component, {
             key: this.$route.fullPath,

@@ -12,7 +12,7 @@ function asyncFor(array, callback) {
   return new Promise((resolve, reject) => {
     function step(index) {
       try {
-        if (index === array.length) {
+        if (index >= array.length) {
           resolve({ break: false });
         } else {
           Promise.resolve(callback(array[index])).then(result => {

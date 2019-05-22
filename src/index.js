@@ -144,7 +144,7 @@ export default function preload(routes, options = {}) {
       beforePreload();
     }
 
-    return asyncFor(to.matched, route => {
+    asyncFor(to.matched, route => {
       return asyncFor(Object.keys(route.components), key => {
         return componentPromise(route.components[key]).then(comp => {
           if (!comp || !comp[preloadKey]) {

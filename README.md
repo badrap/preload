@@ -1,11 +1,11 @@
-# @badrap/preload [![CircleCI](https://circleci.com/gh/badrap/preload.svg?style=shield)](https://circleci.com/gh/badrap/preload) [![npm](https://img.shields.io/npm/v/@badrap/preload.svg)](https://www.npmjs.com/package/@badrap/preload)
+# @badrap/preload [![npm](https://img.shields.io/npm/v/@badrap/preload.svg)](https://www.npmjs.com/package/@badrap/preload)
 
 Add a `preload` function to your [vue-router](https://router.vuejs.org/) route components, used for prepopulating data before those routes get rendered. Mostly modeled after Sapper's [`preload`](https://sapper.svelte.technology/guide#preloading), but also similar to Nuxt.js's [`asyncData`](https://nuxtjs.org/guide/async-data) and Next.js's [`getInitialProps`](https://nextjs.org/docs/#fetching-data-and-component-lifecycle).
 
 ## Installation
 
 ```sh
-$ yarn install --dev @badrap/preload
+$ npm i @badrap/preload
 ```
 
 ## Usage
@@ -19,24 +19,25 @@ This module exports a single function. Use this function to decorate your route 
 ```js
 import Vue from "vue";
 import VueRouter from "vue-router";
-import preload from "@badrap/preload";  // Import preload.
-import Foo from "./Foo.vue";            // Import a couple of route components which
-import Bar from "./Bar.vue";            // we decorate with preload.
+import preload from "@badrap/preload"; // Import preload.
+import Foo from "./Foo.vue"; // Import a couple of route components which
+import Bar from "./Bar.vue"; // we decorate with preload.
 
 Vue.use(VueRouter);
 
-const routes = preload([                // Use preload here to decorate the route components...
-  { path: '/foo', component: Foo },
-  { path: '/bar', component: Bar }
+const routes = preload([
+  // Use preload here to decorate the route components...
+  { path: "/foo", component: Foo },
+  { path: "/bar", component: Bar },
 ]);
 
-const router = new VueRouter({ 
-  routes                                // ...and pass them to vue-router.
+const router = new VueRouter({
+  routes, // ...and pass them to vue-router.
 });
 
 new Vue({
   router,
-  template: "<router-view />"
+  template: "<router-view />",
 }).$mount("#app");
 ```
 
@@ -61,24 +62,25 @@ export default {
   },
   data() {
     return { greeting: "Hello" };
-  }
+  },
 };
 </script>
 ```
 
-Rendering the route **/foo** would then show a div with the text *"Hello, 127.0.0.1!"*, or whatever your IP address happens to be instead of 127.0.0.1. This demonstrates two things:
- * The properties returned by `preload` get combined with the properties returned by `data`.
- * `preload` can be asynchronous (it doesn't have to, though).
+Rendering the route **/foo** would then show a div with the text _"Hello, 127.0.0.1!"_, or whatever your IP address happens to be instead of 127.0.0.1. This demonstrates two things:
+
+- The properties returned by `preload` get combined with the properties returned by `data`.
+- `preload` can be asynchronous (it doesn't have to, though).
 
 ### Context
 
 The `preload` method gets a context object that contains useful information and helpers:
 
-| Context property  | Meaning |
-| ----------------- | ------- |
-| `route`             | The [route object](https://router.vuejs.org/api/#the-route-object) for the route that's currently being rendered. |
-| `redirect`          | A function whose return value you can return from `preload` to redirect the router to. Takes a [location descriptor](https://router.vuejs.org/guide/essentials/navigation.html#router-push-location-oncomplete-onabort). |
-| `error`             | A function whose return value you can return from `preload` to signal a status error. |
+| Context property | Meaning                                                                                                                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `route`          | The [route object](https://router.vuejs.org/api/#the-route-object) for the route that's currently being rendered.                                                                                                        |
+| `redirect`       | A function whose return value you can return from `preload` to redirect the router to. Takes a [location descriptor](https://router.vuejs.org/guide/essentials/navigation.html#router-push-location-oncomplete-onabort). |
+| `error`          | A function whose return value you can return from `preload` to signal a status error.                                                                                                                                    |
 
 Here's an example that uses all of the above:
 
@@ -90,8 +92,10 @@ export default {
     if (!search) {
       return error(400, "?search= missing");
     }
-    return redirect("https://google.com/search?q=" + encodeURIComponent(search));
-  }
+    return redirect(
+      "https://google.com/search?q=" + encodeURIComponent(search)
+    );
+  },
 };
 </script>
 ```

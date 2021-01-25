@@ -15,7 +15,7 @@ function asyncFor(array, callback) {
         if (index >= array.length) {
           resolve({ break: false });
         } else {
-          Promise.resolve(callback(array[index])).then(result => {
+          Promise.resolve(callback(array[index])).then((result) => {
             if (result && result.break) {
               resolve(result);
             } else {
@@ -32,10 +32,10 @@ function asyncFor(array, callback) {
 }
 
 const mapRoutes = (routes, func) => {
-  return routes.map(route => {
+  return routes.map((route) => {
     return func({
       ...route,
-      children: route.children && mapRoutes(route.children, func)
+      children: route.children && mapRoutes(route.children, func),
     });
   });
 };
@@ -45,9 +45,9 @@ const defaultErrorComponent = {
   props: ["status", "error"],
   render(createElement, context) {
     return createElement("div", {}, [
-      context.props.status + " " + context.props.error.message
+      context.props.status + " " + context.props.error.message,
     ]);
-  }
+  },
 };
 
 const ACTION_ERROR = Symbol();
@@ -57,24 +57,24 @@ const error = (status = 404, message = "Not found") => {
   return {
     $type: ACTION_ERROR,
     status,
-    error: message instanceof Error ? message : { message }
+    error: message instanceof Error ? message : { message },
   };
 };
 
-const redirect = to => {
+const redirect = (to) => {
   return {
     $type: ACTION_REDIRECT,
-    to
+    to,
   };
 };
 
-const componentPromise = component => {
+const componentPromise = (component) => {
   if (typeof component !== "function") {
     return Promise.resolve(component);
   }
   return new Promise((resolve, reject) => {
     Promise.resolve(component(resolve, reject)).then(resolve, reject);
-  }).then(resolved => (resolved.__esModule ? resolved.default : resolved));
+  }).then((resolved) => (resolved.__esModule ? resolved.default : resolved));
 };
 
 export default function preload(routes, options = {}) {
@@ -82,18 +82,18 @@ export default function preload(routes, options = {}) {
     context = {},
     errorComponent = defaultErrorComponent,
     beforePreload,
-    afterPreload
+    afterPreload,
   } = options;
 
   let component;
   const preloadKey = Symbol();
 
-  const cachedWrapper = component => {
+  const cachedWrapper = (component) => {
     let cached = null;
     return () => {
       if (!cached) {
         cached = componentPromise(component).then(
-          resolved => {
+          (resolved) => {
             if (!resolved.preload) {
               return resolved;
             }
@@ -102,17 +102,17 @@ export default function preload(routes, options = {}) {
               extends: resolved,
               [preloadKey]: {
                 key,
-                preload: resolved.preload
+                preload: resolved.preload,
               },
               inject: {
-                $preload: preloadKey
+                $preload: preloadKey,
               },
               data() {
                 return { ...this.$preload[key] };
-              }
+              },
             };
           },
-          err => {
+          (err) => {
             cached = null;
             return Promise.reject(err);
           }
@@ -122,14 +122,14 @@ export default function preload(routes, options = {}) {
     };
   };
 
-  const newRoutes = mapRoutes(routes, route => {
+  const newRoutes = mapRoutes(routes, (route) => {
     const newRoute = { ...route };
     if (newRoute.component) {
       newRoute.component = cachedWrapper(newRoute.component);
     }
     if (newRoute.components) {
       const components = {};
-      Object.keys(newRoute.components).forEach(key => {
+      Object.keys(newRoute.components).forEach((key) => {
         components[key] = cachedWrapper(newRoute.components[key]);
       });
       newRoute.components = components;
@@ -144,16 +144,16 @@ export default function preload(routes, options = {}) {
       beforePreload();
     }
 
-    asyncFor(to.matched, route => {
-      return asyncFor(Object.keys(route.components), key => {
-        return componentPromise(route.components[key]).then(comp => {
+    asyncFor(to.matched, (route) => {
+      return asyncFor(Object.keys(route.components), (key) => {
+        return componentPromise(route.components[key]).then((comp) => {
           if (!comp || !comp[preloadKey]) {
             return;
           }
           const { key, preload } = comp[preloadKey];
           return Promise.resolve(
             preload({ route: to, redirect, error, ...context })
-          ).then(data => {
+          ).then((data) => {
             if (data && data.$type === ACTION_REDIRECT) {
               return { break: true, value: data.to };
             }
@@ -163,10 +163,10 @@ export default function preload(routes, options = {}) {
                   return h(errorComponent, {
                     props: {
                       status: data.status,
-                      error: data.error
-                    }
+                      error: data.error,
+                    },
                   });
-                }
+                },
               };
               return { break: true };
             }
@@ -176,7 +176,7 @@ export default function preload(routes, options = {}) {
       });
     })
       .then(
-        result => {
+        (result) => {
           if (afterPreload) {
             afterPreload();
           }
@@ -186,17 +186,17 @@ export default function preload(routes, options = {}) {
           component = {
             provide() {
               return {
-                [preloadKey]: datas
+                [preloadKey]: datas,
               };
             },
             render(h) {
               return h("router-view", {
-                attrs: { ...this.$attrs }
+                attrs: { ...this.$attrs },
               });
-            }
+            },
           };
         },
-        err => {
+        (err) => {
           if (afterPreload) {
             afterPreload();
           }
@@ -215,11 +215,11 @@ export default function preload(routes, options = {}) {
         render(h) {
           return h(component, {
             key: this.$route.fullPath,
-            attrs: this.$attrs
+            attrs: this.$attrs,
           });
-        }
+        },
       },
-      children: newRoutes
-    }
+      children: newRoutes,
+    },
   ];
 }

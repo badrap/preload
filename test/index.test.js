@@ -7,7 +7,7 @@ function div(attrs = {}) {
     render(h) {
       return h("div", {}, []);
     },
-    ...attrs
+    ...attrs,
   };
 }
 
@@ -15,7 +15,7 @@ const DIV = div();
 
 function navigate(routes, path = "/", config = {}) {
   const router = new Router({
-    routes: preload(routes, config)
+    routes: preload(routes, config),
   });
 
   const localVue = createLocalVue();
@@ -30,11 +30,11 @@ function navigate(routes, path = "/", config = {}) {
         errorCaptured(err) {
           reject(err);
           return false;
-        }
+        },
       },
       {
         localVue,
-        router
+        router,
       }
     );
 
@@ -56,9 +56,9 @@ describe("preload", () => {
           extends: DIV,
           preload() {
             called = true;
-          }
-        }
-      }
+          },
+        },
+      },
     ]);
     expect(called).toBe(true);
   });
@@ -71,9 +71,9 @@ describe("preload", () => {
           name: "SomeComponent",
           preload() {
             return { a: 1 };
-          }
-        })
-      }
+          },
+        }),
+      },
     ]);
     expect(wrapper.find({ name: "SomeComponent" }).vm.a).toBe(1);
   });
@@ -86,9 +86,9 @@ describe("preload", () => {
           name: "SomeComponent",
           async preload() {
             return { a: 1 };
-          }
-        })
-      }
+          },
+        }),
+      },
     ]);
     expect(wrapper.find({ name: "SomeComponent" }).vm.a).toBe(1);
   });
@@ -99,12 +99,12 @@ describe("preload", () => {
         path: "/",
         beforeEnter(to, from, next) {
           next("/foo");
-        }
+        },
       },
       {
         path: "/foo",
-        component: DIV
-      }
+        component: DIV,
+      },
     ]);
     expect(wrapper.contains(DIV)).toBe(true);
   });
@@ -115,8 +115,8 @@ describe("preload", () => {
         {
           path: "/:id",
           props: true,
-          component: DIV
-        }
+          component: DIV,
+        },
       ],
       "/1"
     );
@@ -130,7 +130,7 @@ describe("preload", () => {
         component: {
           render(h) {
             return h("router-view", { props: { name: "first" } }, []);
-          }
+          },
         },
         children: [
           {
@@ -140,12 +140,12 @@ describe("preload", () => {
                 name: "SomeComponent",
                 preload() {
                   return { a: 1 };
-                }
-              })
-            }
-          }
-        ]
-      }
+                },
+              }),
+            },
+          },
+        ],
+      },
     ]);
     expect(wrapper.find({ name: "SomeComponent" }).vm.a).toBe(1);
   });
@@ -157,13 +157,13 @@ describe("preload", () => {
         component: {
           preload({ redirect }) {
             return redirect("/test");
-          }
-        }
+          },
+        },
       },
       {
         path: "/test",
-        component: DIV
-      }
+        component: DIV,
+      },
     ]);
     expect(wrapper.contains(DIV)).toBe(true);
   });
@@ -176,9 +176,9 @@ describe("preload", () => {
           component: {
             preload({ error }) {
               return error();
-            }
-          }
-        }
+            },
+          },
+        },
       ],
       "/",
       { errorComponent: DIV }

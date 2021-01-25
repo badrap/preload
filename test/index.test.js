@@ -1,6 +1,6 @@
 import preload from "../src/index.js";
 import { mount, createLocalVue } from "@vue/test-utils";
-import Router from "vue-router";
+import Router, { isNavigationFailure, NavigationFailureType } from "vue-router";
 
 function div(attrs = {}) {
   return {
@@ -38,10 +38,14 @@ function navigate(routes, path = "/", config = {}) {
       }
     );
 
-    router.push(path);
     router.onError(reject);
     router.afterEach(() => {
       resolve(wrapper);
+    });
+    router.push(path).catch((err) => {
+      if (!isNavigationFailure(err, NavigationFailureType.redirected)) {
+        reject(err);
+      }
     });
   });
 }
@@ -75,7 +79,7 @@ describe("preload", () => {
         }),
       },
     ]);
-    expect(wrapper.find({ name: "SomeComponent" }).vm.a).toBe(1);
+    expect(wrapper.findComponent({ name: "SomeComponent" }).vm.a).toBe(1);
   });
 
   it("supports async preload()", async () => {
@@ -90,7 +94,7 @@ describe("preload", () => {
         }),
       },
     ]);
-    expect(wrapper.find({ name: "SomeComponent" }).vm.a).toBe(1);
+    expect(wrapper.findComponent({ name: "SomeComponent" }).vm.a).toBe(1);
   });
 
   it("survives routes without components", async () => {
@@ -106,7 +110,7 @@ describe("preload", () => {
         component: DIV,
       },
     ]);
-    expect(wrapper.contains(DIV)).toBe(true);
+    expect(wrapper.findComponent(DIV).exists()).toBe(true);
   });
 
   it("survives routes with props", async () => {
@@ -120,7 +124,7 @@ describe("preload", () => {
       ],
       "/1"
     );
-    expect(wrapper.contains(DIV)).toBe(true);
+    expect(wrapper.findComponent(DIV).exists()).toBe(true);
   });
 
   it("supports named views", async () => {
@@ -147,7 +151,7 @@ describe("preload", () => {
         ],
       },
     ]);
-    expect(wrapper.find({ name: "SomeComponent" }).vm.a).toBe(1);
+    expect(wrapper.findComponent({ name: "SomeComponent" }).vm.a).toBe(1);
   });
 
   it("redirects when a redirect() result is returned", async () => {
@@ -165,7 +169,7 @@ describe("preload", () => {
         component: DIV,
       },
     ]);
-    expect(wrapper.contains(DIV)).toBe(true);
+    expect(wrapper.findComponent(DIV).exists()).toBe(true);
   });
 
   it("renders the error component when a error() result is returned", async () => {
@@ -183,6 +187,6 @@ describe("preload", () => {
       "/",
       { errorComponent: DIV }
     );
-    expect(wrapper.contains(DIV)).toBe(true);
+    expect(wrapper.findComponent(DIV).exists()).toBe(true);
   });
 });
